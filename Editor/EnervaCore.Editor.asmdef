@@ -1,0 +1,10 @@
+{
+  "name": "com.enerva.enervacore.editor",
+  "references": [
+    "com.enerva.enervacore"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "autoReferenced": false
+}
