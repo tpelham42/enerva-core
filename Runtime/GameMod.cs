@@ -12,6 +12,10 @@ namespace EnervaCore {
 
     public enum GameModSource { Internal, Public, SteamWorkshop }
 
+    /// <summary>
+    /// A GameMod holds a collection of gamedata that can be activated or deactivated. When activated gamedata
+    /// is passed over to the DBManager so that it is accessible by the rest of the system.
+    /// </summary>
     public class GameMod {
         string _id;
         ulong _steamId;
@@ -116,10 +120,22 @@ namespace EnervaCore {
 
         #endregion
 
-        public void Activate(bool GenerateUnityAssetFiles=false) {            
+        public void Activate() {            
             foreach (ECObjectData item in GameDataTemplates) {
                 ECM.DB.AddTemplate(this, item);
+
+                item.OnDataActivated();
             }            
+        }
+
+        public void Deactivate() {
+            foreach (ECObjectData item in GameDataTemplates) {
+                item.OnDataDeactivated();
+
+                ECM.DB.RemoveTemplate(item.ID);
+            }
+
+            ClearData();
         }
 
         public void AddData(ECObjectData GIData) {
@@ -130,14 +146,6 @@ namespace EnervaCore {
 
         public void ClearData() {
             GameDataTemplates.Clear();
-        }
-
-        public GameMod FindMod(string modID) {
-            if (modID == null) return null;
-            
-            if (this.ID == modID) return this;
-         
-            return null;
-        }
+        }        
     }
 }

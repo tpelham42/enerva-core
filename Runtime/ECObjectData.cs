@@ -1,8 +1,8 @@
-﻿using System;
+﻿
 using System.Collections.Generic;
 using System.Xml.Serialization;
-using UnityEditor.Build.Content;
 using UnityEngine;
+using UnityEngine.Android;
 
 namespace EnervaCore {    
     public class ECObjectData {
@@ -35,5 +35,32 @@ namespace EnervaCore {
 
             return null;
         }
+
+        /// <summary>
+        /// Returns an asset stored in CAssets by id
+        /// </summary>
+        /// <typeparam name="T">Class return type </typeparam>
+        /// <param name="AssetID">The id defined in CAssets->Asset xml</param>
+        /// <returns></returns>
+        protected T GetAsset<T>(string AssetID) where T : class {
+            CAssets Assets = FindComponent<CAssets>();
+
+            if (Assets == null) {
+                UnityEngine.Debug.Log(this + " :: Error Getting Asset. Unable to find CAssets component!");
+                return null;
+            }
+
+            return Assets.GetAsset<T>(AssetID);
+        }
+
+        /// <summary>
+        /// Called from ModManager when the corresponding mod has been activated
+        /// </summary>
+        public virtual void OnDataActivated() { }
+
+        /// <summary>
+        /// Called from ModManager when the corresponding mod has been deactivated
+        /// </summary>
+        public virtual void OnDataDeactivated() { }
     }
 }

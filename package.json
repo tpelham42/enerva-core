@@ -12,6 +12,6 @@
     "name": "Tim Pelham"
   },
   "dependencies": {
-    "com.unity.addressables": "1.22.1"
+    "com.unity.addressables": "2.1.0"
   }
 }

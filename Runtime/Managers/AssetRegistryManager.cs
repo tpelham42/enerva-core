@@ -1,6 +1,9 @@
 ﻿using EnervaCore;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using UnityEngine.AddressableAssets;
+using UnityEngine.ResourceManagement.AsyncOperations;
 
 
 
@@ -26,8 +29,25 @@ public class AssetRegistryManager : IManager, IManagerGMInitialized {
     }
 
     public virtual void LoadAssets() {        
-    }
+        foreach (var asset in _loadedAssets) {
+            string assetID = asset.Key;
+            Addressables.LoadAssetAsync<System.Object>(assetID).Completed += handle =>
+            {
+                if (handle.Status == AsyncOperationStatus.Succeeded) {
+                    var loadedAsset = handle.Result;
+                    _loadedAssets[assetID] = loadedAsset;   
+                    
+                    OnAssetLoaded?.Invoke(assetID, loadedAsset);
 
+                    //UnityEngine.Debug.Log(this + $" :: Loaded Asset: {assetID}");
+                }
+                else {
+                    UnityEngine.Debug.LogError(this + $" :: Error Loading Asset '{assetID}' Exception: {handle.OperationException}");
+                }
+            };
+        }
+    }
+   
     public T GetInstance<T>(string path) {
         if (_loadedAssets.ContainsKey(path)) {
             System.Object obj = _loadedAssets[path];

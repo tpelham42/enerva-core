@@ -1,7 +1,8 @@
 {
   "name": "com.enerva.enervacore.editor",
   "references": [
-    "com.enerva.enervacore"
+    "com.enerva.enervacore",
+    "Unity.Addressables.Editor"
   ],
   "includePlatforms": [
     "Editor"

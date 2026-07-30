@@ -1,13 +1,24 @@
 ﻿using EnervaCore;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Xml.Serialization;
 
 
+/// <summary>
+/// Loads a list of <Asset>PathKey</Asset> and handles registering them with the AssetRegistry System. Data what uses this component
+/// can use GetAsset<T> to get a specified asset.
+/// </summary>
 public class CAssets : ECObjectDataComponent {
     [XmlElement("Asset")]
-    public List<string> Assets { get; set; }
+    public List<CAssetXmlRow> Assets { get; set; }
 
-    Dictionary<string, System.Object> AssetsDictionary { get; set; } = new Dictionary<string, System.Object>();
+    [XmlIgnore]
+    //Asset ID attribute to Addressables Path
+    public Dictionary<string, string> AssetIDReferenceDictionary { get; private set; } = new Dictionary<string, string>();
+
+    [XmlIgnore]
+    //Addressables Path -> Loaded Object Data
+    public Dictionary<string, System.Object> AssetsDictionary { get; set; } = new Dictionary<string, System.Object>();
 
     public override void OnLoaded() {
         base.OnLoaded();
@@ -22,13 +33,16 @@ public class CAssets : ECObjectDataComponent {
         arm.OnAssetLoaded += OnRegistryAssetLoaded;
 
         //Register asset data for AssetRegistry
-        foreach (var assetPath in Assets) {
+        foreach (var assetInfo in Assets) {
             //Init storage for loaded object
-            AssetsDictionary.Add(assetPath, null);
+            AssetIDReferenceDictionary.Add(assetInfo.ID, assetInfo.AssetPath);
+            AssetsDictionary.Add(assetInfo.AssetPath, null);
+
+            UnityEngine.Debug.Log(this + $" :: Loading Asset Data ID: {assetInfo.ID} Path: {assetInfo.AssetPath}");
 
             //Notify Asset Registry. The callback above will pass the object
             //over when it's loaded
-            arm.RegisterAssetID(assetPath);
+            arm.RegisterAssetID(assetInfo.AssetPath);
         }
     }
 
@@ -39,10 +53,32 @@ public class CAssets : ECObjectDataComponent {
     }
 
     public T GetAsset<T>(string assetID) where T : class {
+        if (string.IsNullOrEmpty(assetID)) {
+            UnityEngine.Debug.LogError(this + " :: GetAsset Failed. Passed in AssetID is null or empty!");
+            return null;
+        }
+
+        if (AssetIDReferenceDictionary.ContainsKey(assetID)) {
+            string AssetPath = AssetIDReferenceDictionary[assetID];
+            if (AssetsDictionary.ContainsKey(AssetPath)) {
+                return (T)AssetsDictionary[AssetPath];
+            }
+        }
+        /*
         if (AssetsDictionary.ContainsKey(assetID)) {
             return (T)AssetsDictionary[assetID];
         }
 
+        */
+
         return null;
     }
+}
+
+public class CAssetXmlRow {
+    [XmlAttribute("id")]
+    public string ID { get; set; }
+
+    [XmlText]
+    public string AssetPath { get; set; }
 }
