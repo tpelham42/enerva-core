@@ -30,7 +30,19 @@ namespace EnervaCore {
             InitManagers(assemblies);
             RunGameManagerInitializedInterfaces(assemblies);
 
-            OnECMInitialized();
+            AssetRegistryManager ARM = GetManager<AssetRegistryManager>();
+            if (ARM.AssetLoadProgress < 1.0f) {
+                GetManager<AssetRegistryManager>().OnAllAssetsLoaded += () => {
+                    _initialized = true;
+                    OnECMInitialized();
+                };
+            }
+            else {
+                _initialized = true;
+                OnECMInitialized();
+            }
+
+            
         }
 
         public override void OnDestroy() {
@@ -74,7 +86,7 @@ namespace EnervaCore {
         
         //Loads and Automatically registers assembly classes that implement the IManager interface
         private void InitManagers(Assembly[] assemblies) {
-            _initialized = true;
+            
 
             Debug.Log(this + " :: Initializing Managers...");
 

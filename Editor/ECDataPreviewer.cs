@@ -196,6 +196,7 @@ namespace EnervaCore {
         static string FormatDictionaryEnumerator(IEnumerable<DictionaryEntry> entries, int depth) {
             var items = new List<string>();
             int count = 0;
+            if(entries == null) return "{}";
             foreach (var de in entries) {
                 if (count++ >= MaxItemsToShow) { items.Add("…"); break; }
                 items.Add($"{FormatValueInternal(de.Key, depth + 1)}: {FormatValueInternal(de.Value, depth + 1)}");

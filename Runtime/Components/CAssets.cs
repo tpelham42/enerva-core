@@ -5,7 +5,7 @@ using System.Xml.Serialization;
 
 
 /// <summary>
-/// Loads a list of <Asset>PathKey</Asset> and handles registering them with the AssetRegistry System. Data what uses this component
+/// Loads a list of <Asset>PathKey</Asset> and handles registering them with the AssetRegistry System. Data that uses this component
 /// can use GetAsset<T> to get a specified asset.
 /// </summary>
 public class CAssets : ECObjectDataComponent {
@@ -60,17 +60,18 @@ public class CAssets : ECObjectDataComponent {
 
         if (AssetIDReferenceDictionary.ContainsKey(assetID)) {
             string AssetPath = AssetIDReferenceDictionary[assetID];
+
             if (AssetsDictionary.ContainsKey(AssetPath)) {
-                return (T)AssetsDictionary[AssetPath];
+
+                if(AssetsDictionary[AssetPath] is T typed) {
+                    return typed as T;
+                }
+
+                UnityEngine.Debug.LogWarning(this + $" :: GetAsset Failed. Asset '{assetID}' at '{AssetPath}' is not a {typeof(T)}.");
+                //return (T)AssetsDictionary[AssetPath];
             }
         }
-        /*
-        if (AssetsDictionary.ContainsKey(assetID)) {
-            return (T)AssetsDictionary[assetID];
-        }
-
-        */
-
+        
         return null;
     }
 }
