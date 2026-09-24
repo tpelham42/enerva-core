@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using UnityEditor.ShaderKeywordFilter;
 
 namespace EnervaCore.Managers {
     public class DBManager : IManager {
@@ -179,7 +180,7 @@ namespace EnervaCore.Managers {
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public List<T> GetTemplatesByTypeList<T>() where T : ECObjectData {
+        public List<T> GetTemplatesByTypeList<T>(string[] Tags = null, TagMatchType TagMatchType = TagMatchType.MatchAll) where T : ECObjectData {
             var result = new List<T>();
             var targetType = typeof(T);
 
@@ -189,12 +190,12 @@ namespace EnervaCore.Managers {
 
             // ItemTemplatesByType uses concrete template types as keys.
             // Collect all entries whose key type is assignable to T (includes derived types),
-            // and cast each ECObjectData to T when possible.
+            // and cast each ECObjectData to T when possible and has matching tags.
             foreach (var kvp in ItemTemplatesByType) {
                 var storedType = kvp.Key;
                 if (targetType.IsAssignableFrom(storedType)) {
                     foreach (var data in kvp.Value) {
-                        if (data is T typed) {
+                        if (data is T typed && data.HasMatchingTags(Tags, TagMatchType)) {
                             result.Add(typed);
                         }
                     }

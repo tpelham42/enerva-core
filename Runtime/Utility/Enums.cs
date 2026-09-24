@@ -1,0 +1,1 @@
+public enum TagMatchType { MatchAll, MatchAny }

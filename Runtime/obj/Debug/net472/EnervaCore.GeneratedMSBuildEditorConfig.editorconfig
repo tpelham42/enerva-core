@@ -1,0 +1,8 @@
+is_global = true
+build_property.RootNamespace = EnervaCore
+build_property.ProjectDir = F:\Unity EnervaCore\EnervaCore - Unity Package\enerva-core\Runtime\
+build_property.EnableComHosting = 
+build_property.EnableGeneratedComInterfaceComImportInterop = 
+build_property.CsWinRTUseWindowsUIXamlProjections = false
+build_property.EffectiveAnalysisLevelStyle = 
+build_property.EnableCodeStyleSeverity = 

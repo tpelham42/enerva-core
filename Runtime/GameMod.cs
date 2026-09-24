@@ -2,6 +2,8 @@
 using System.IO;
 
 using UnityEngine;
+using System;
+
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -122,9 +124,13 @@ namespace EnervaCore {
 
         public void Activate() {            
             foreach (ECObjectData item in GameDataTemplates) {
-                ECM.DB.AddTemplate(this, item);
-
-                item.OnDataActivated();
+                try {
+                    ECM.DB.AddTemplate(this, item);
+                    item.OnDataActivated();
+                }
+                catch(Exception ex) {
+                    UnityEngine.Debug.LogError(this + $" :: Activate. Error Adding Template: {ex}");
+                }        
             }            
         }
 

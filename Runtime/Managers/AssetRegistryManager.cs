@@ -12,7 +12,7 @@ public delegate void AssetLoadedDelegate(string assetID, System.Object assetObje
 public delegate void AssetLoadProgressDelegate(float progress);
 public delegate void AssetsLoadedDelegate();
 
-public class AssetRegistryManager : IManager, IManagerGMInitialized {
+public class AssetRegistryManager : IManager, IManagerPostInit {
 
     //Addressable Path -> Loaded Object
     private Dictionary<string, System.Object> _loadedAssets = new Dictionary<string, System.Object>();
@@ -93,7 +93,7 @@ public class AssetRegistryManager : IManager, IManagerGMInitialized {
         
     }
 
-    public void OnGameManagerInitialized() {
+    public void OnPostInit() {
         LoadAssets();
     }
     #endregion

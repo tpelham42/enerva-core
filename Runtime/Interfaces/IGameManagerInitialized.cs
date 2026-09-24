@@ -1,11 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace EnervaCore {
+    
 
-namespace EnervaCore {
-    public interface IGameManagerInitialized {
-        void OnGameManagerInitialized();
+    public interface IECGameStart {
+        /// <summary>
+        /// Called after all managers are initialized and all data has been loaded.
+        /// </summary>
+        //void ECGameStart();
     }
 }

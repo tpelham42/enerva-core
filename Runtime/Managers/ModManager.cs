@@ -20,7 +20,7 @@ namespace EnervaCore {
      *   - Mods/ModName/ModInfo.xml
      *     > Mods/ModName/Data/*.xml
      */
-    public class ModManager : IManager, IManagerGMInitialized {
+    public class ModManager : IManager, IManagerPostInit {
         
         private Dictionary<string, GameMod> _mods;
         private Dictionary<string, GameMod> _enabledMods;
@@ -50,7 +50,7 @@ namespace EnervaCore {
 
         //Called after all other managers have been initialized. This is where we can safely activate
         //the core mod and any other mods that need to be activated after the game manager is initialized.
-        public void OnGameManagerInitialized() {
+        public void OnPostInit() {
             if (CoreMod == null) {
                 Debug.LogError(this + " :: Core Mod Not Found! Please ensure the core mod is installed and has a valid modinfo.xml file.");
                 return;
@@ -400,8 +400,7 @@ namespace EnervaCore {
                     var serializer = GetOrCreateSerializerForType(compType);
                     using (var reader = child.CreateReader()) {
                         var compObj = (ECObjectDataComponent)serializer.Deserialize(reader);
-                        if (compObj != null) {
-                            Debug.Log(this + $" :: Deserialized component: {compObj.GetType()}");
+                        if (compObj != null) {                            
                             results.Add(compObj);
                         }
                     }

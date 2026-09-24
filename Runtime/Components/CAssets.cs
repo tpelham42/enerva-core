@@ -1,6 +1,5 @@
 ﻿using EnervaCore;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Xml.Serialization;
 
 
@@ -37,8 +36,6 @@ public class CAssets : ECObjectDataComponent {
             //Init storage for loaded object
             AssetIDReferenceDictionary.Add(assetInfo.ID, assetInfo.AssetPath);
             AssetsDictionary.Add(assetInfo.AssetPath, null);
-
-            UnityEngine.Debug.Log(this + $" :: Loading Asset Data ID: {assetInfo.ID} Path: {assetInfo.AssetPath}");
 
             //Notify Asset Registry. The callback above will pass the object
             //over when it's loaded

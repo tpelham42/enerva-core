@@ -27,9 +27,16 @@ namespace EnervaCore {
             Debug.Log(this + " :: Initializing ECM...");
             Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
 
+            //Phase 1: Initialize all managers that implement the IManager interface            
             InitManagers(assemblies);
-            RunGameManagerInitializedInterfaces(assemblies);
 
+            //Phase 2: Run Post Init for managers that implement PostInit interface
+            //This is done here to ensure all managers have been initialized before running PostInit
+            RunPostInitInterfaces();
+
+            //Phase 3: Handle callback and game start once ARM has finished loading all assets.
+            //If ARM has already finished loading, then we can just run the callback and game
+            //start immediately.
             AssetRegistryManager ARM = GetManager<AssetRegistryManager>();
             if (ARM.AssetLoadProgress < 1.0f) {
                 GetManager<AssetRegistryManager>().OnAllAssetsLoaded += () => {
@@ -41,8 +48,6 @@ namespace EnervaCore {
                 _initialized = true;
                 OnECMInitialized();
             }
-
-            
         }
 
         public override void OnDestroy() {
@@ -117,22 +122,27 @@ namespace EnervaCore {
             }
         }
 
-        private void RunGameManagerInitializedInterfaces(Assembly[] assemblies) {
+        private void RunPostInitInterfaces() {
             foreach(IManager manager in _managersList) {
-                IManagerGMInitialized igmi = manager as IManagerGMInitialized;
+                IManagerPostInit igmi = manager as IManagerPostInit;
                 if (igmi != null) {
-                    igmi.OnGameManagerInitialized();
-                }
-            }
-
-            IEnumerable<IGameManagerInitialized> list = FindObjectsOfType<MonoBehaviour>().OfType<IGameManagerInitialized>();
-            if (list != null) {
-                foreach (IGameManagerInitialized igmi in list) {
-                    igmi?.OnGameManagerInitialized();
+                    igmi.OnPostInit();
                 }
             }
         }
 
-        protected virtual void OnECMInitialized() => ECMInitialized?.Invoke(this);
+        private void RunGameStartInterfaces() {
+            foreach (IManager manager in _managersList) {
+                IManagerGameStart igmi = manager as IManagerGameStart;
+                if (igmi != null) {
+                    igmi.OnGameStart();
+                }
+            }
+        }
+
+        protected virtual void OnECMInitialized() {
+            RunGameStartInterfaces();
+            ECMInitialized?.Invoke(this);
+        }
     }
 }
