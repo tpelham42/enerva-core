@@ -1,13 +1,26 @@
 ﻿
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Xml.Serialization;
-using UnityEngine;
-using UnityEngine.Android;
 
-namespace EnervaCore {    
+
+
+namespace EnervaCore {
+
+    /// <summary>
+    /// The base class that acts as adata template for an ECObject, containing its ID, spawn type, tags, and components. 
+    /// This class is used to define the values of an ECObject that is loaded from XML data. New data types can be added
+    /// by inheriting from ECObjectData. ECObjectData is deserialized from XML by the ModManager and the resulting data is accessed
+    /// from the DBManager.
+    /// 
+    /// Example:
+    /// ECM.Main.GetManager<DBManager>().GetTemplatesByType<MyDataType>("myDataID");
+    /// 
+    /// Example Xml:
+    /// <ECObjectData id="myDataID" spawnType="MyNamespace.MyObject">
+    /// </ECObjectData>
+    /// </summary>
     public class ECObjectData {
 
         [XmlAttribute("id")]

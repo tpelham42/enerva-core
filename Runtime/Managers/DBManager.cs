@@ -1,11 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using UnityEditor.ShaderKeywordFilter;
+
 
 namespace EnervaCore.Managers {
+    /// <summary>
+    /// The DBManager is responsible for managing the database of ECObjectData templates. 
+    /// It provides methods to add, remove, and retrieve templates by name, type, and mod. 
+    /// It also allows for the instantiation of ECObject instances based on their corresponding templates. 
+    /// The manager maintains dictionaries for quick access to templates by name, type, and mod/type combinations.
+    /// </summary>
     public class DBManager : IManager {
 
         //Flat list of all ECObjectData items from all mods, for easy access        
@@ -30,6 +35,12 @@ namespace EnervaCore.Managers {
         }
         #endregion
 
+        /// <summary>
+        /// Returns an instance of the specified type T which must be an ECObject type, initialized with the template corresponding to the provided templateName.
+        /// </summary>
+        /// <typeparam name="T">Type of the instance to create</typeparam>
+        /// <param name="templateName">ID of EObjectData template</param>
+        /// <returns></returns>
         public T GetInstance<T>(string templateName) where T : ECObject {
             if (!ItemTemplatesByName.ContainsKey(templateName)) {
                 UnityEngine.Debug.LogWarning(this + " :: GetInstance :: Template with name " + templateName + " does not exist in the database.");

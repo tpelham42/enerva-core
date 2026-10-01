@@ -1,15 +1,20 @@
 ﻿using UnityEngine;
 
 namespace EnervaCore {
-    /**
-     * Attaches to a GameObject in the scene and initializes the EnervaCore framework. 
-     * It also calls the Update method of the GameManager every frame. 
-     */
+    /// <summary>
+    /// EnervaCoreHandler is a MonoBehaviour that serves as the entry point for initializing the EnervaCore framework within a Unity project. 
+    /// It manages the lifecycle of the EnervaCoreManager, ensuring that it is properly initialized and updated during the game's runtime.
+    /// </summary>
+    
     public class EnervaCoreHandler : MonoBehaviour {
         [Tooltip("Project Name is used to identify the project within the EnervaCore framework. It is also used to setup specific runtime data folders.")]
         public string ProjectName = "EnervaCore Test Game";
         private EnervaCoreManager _enervaGameManager;
 
+        private void Awake() {
+            //Ensure that the EnervaCoreHandler persists across scene loads to maintain the state of the EnervaCoreManager.
+            DontDestroyOnLoad(gameObject);
+        }
 
         void Start() {
             _enervaGameManager = ECM.Main;
