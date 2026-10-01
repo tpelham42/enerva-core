@@ -19,12 +19,15 @@ namespace EnervaCore {
         public event Action<EnervaCoreManager> ECMInitialized;
 
         
-
+        /// <summary>
+        /// Initializes the Enerva Core System. This must be called to spin up Managers and utilities used by Enerva Core
+        /// </summary>
+        /// <param name="ProjectName"></param>
         public void Initialize(string ProjectName) {
 
             Settings = new ECSettings(ProjectName);
 
-            Debug.Log(this + " :: Initializing ECM...");
+            Debug.Log(this + " :: Initializing Enerva Core Manager...");
             Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
 
             //Phase 1: Initialize all managers that implement the IManager interface            
@@ -75,6 +78,9 @@ namespace EnervaCore {
             if (_updateManagersList != null) {
                 foreach (IManagerUpdate managerUpdate in _updateManagersList) {
                     managerUpdate.Update(Time.deltaTime);
+
+                    //TODO: Handle raw time separately from regular update
+                    managerUpdate.UpdateRaw(Time.deltaTime);
                 }
             }
         }
@@ -87,9 +93,12 @@ namespace EnervaCore {
             }
 
             return default;
-        }        
-        
-        //Loads and Automatically registers assembly classes that implement the IManager interface
+        }
+
+        /// <summary>
+        /// Loads and Automatically registers assembly classes that implement the IManager interface
+        /// </summary>
+        /// <param name="assemblies"></param>
         private void InitManagers(Assembly[] assemblies) {
             
 

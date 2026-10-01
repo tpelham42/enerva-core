@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("EnervaCore")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+af37232261307a844dba2a7a2dd1944e354ea85b")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0142a7418598b30bb6d71f7a68fa5c7a800c3dde")]
 [assembly: System.Reflection.AssemblyProductAttribute("EnervaCore")]
 [assembly: System.Reflection.AssemblyTitleAttribute("EnervaCore")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
