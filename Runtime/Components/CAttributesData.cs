@@ -14,7 +14,7 @@ namespace EnervaCore {
      *  id value must reference a valid AttributeData record. The default value can optionally be overriden by
      *  setting the value in the InnerText of the Attribute node.
      */
-    public class CAttributesData : ECObjectDataComponent {
+    public class CAttributesData : ECObjectComponentData {
         [XmlElement("Attribute")]
         public List<CAttributesXmlRow> Attributes { get; set; } = new List<CAttributesXmlRow>();
 

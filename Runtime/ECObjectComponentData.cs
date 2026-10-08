@@ -3,7 +3,7 @@ using System.Linq;
 using System.Xml.Serialization;
 
 namespace EnervaCore {
-    public class ECObjectDataComponent {
+    public class ECObjectComponentData {
 
         [XmlIgnore]
         public ECObjectData Parent { get; set; }

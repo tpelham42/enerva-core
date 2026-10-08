@@ -1,7 +1,7 @@
 using UnityEngine;
 
 namespace EnervaCore.Objects {
-    public class InputKey : ECObject {
+    public class InputKey : ECObjectInstance {
 
         public InputKeyData KeyData {
             get {

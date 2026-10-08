@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 
 namespace EnervaCore.Objects {
-    public class Attribute : ECObject {
+    public class Attribute : ECObjectInstance {
         public float BaseValue { get; set; } = 0f;
         public float CurrentValue { get; set; } = 0f;
         public List<AttributeEffectData> Effects { get; set; } = new List<AttributeEffectData>();

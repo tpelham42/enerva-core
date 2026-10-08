@@ -1,6 +1,6 @@
 ﻿
 namespace EnervaCore {
-    public class CInventoryData : ECObjectDataComponent {
+    public class CInventoryData : ECObjectComponentData {
 
     }
 }

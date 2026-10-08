@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace EnervaCore {
-    public class Inventory : ECObject {
+    public class Inventory : ECObjectInstance {
 
         public enum InventoryMatchMode { HasExact, HasAtleast }
         public Inventory() { }

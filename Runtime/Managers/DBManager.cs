@@ -41,7 +41,7 @@ namespace EnervaCore.Managers {
         /// <typeparam name="T">Type of the instance to create</typeparam>
         /// <param name="templateName">ID of EObjectData template</param>
         /// <returns></returns>
-        public T GetInstance<T>(string templateName) where T : ECObject {
+        public T GetInstance<T>(string templateName) where T : ECObjectInstance {
             if (!ItemTemplatesByName.ContainsKey(templateName)) {
                 UnityEngine.Debug.LogWarning(this + " :: GetInstance :: Template with name " + templateName + " does not exist in the database.");
                 return null;
@@ -78,7 +78,7 @@ namespace EnervaCore.Managers {
                 UnityEngine.Debug.LogError(this + $" :: GetInstance Error. Spawn Type for {template.ID} not defined!");
             }
 
-            ECObject instance = null;
+            ECObjectInstance instance = null;
 
             try {
                 if (spawnType != null && typeof(T).IsAssignableFrom(spawnType)) {

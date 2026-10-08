@@ -90,7 +90,7 @@ namespace EnervaCore {
             // Force reflection to find all subclasses of ECObjectData
             subTypes = AppDomain.CurrentDomain.GetAssemblies()
                 .SelectMany(s => s.GetTypes())
-                .Where(p => typeof(ECObjectDataComponent).IsAssignableFrom(p) && !p.IsAbstract);
+                .Where(p => typeof(ECObjectComponentData).IsAssignableFrom(p) && !p.IsAbstract);
 
             foreach (var type in subTypes) {                
                 _ecObjectDataComponentTypes.Add(type.Name, type);
@@ -99,12 +99,12 @@ namespace EnervaCore {
 
         private void LoadModFolders() {
             //Load Internal Mods (Primarily Core)
-            Debug.Log(this + " :: Loading Internal Mods From: " + ECM.Settings.InternalModPath);
+            //Debug.Log(this + " :: Loading Internal Mods From: " + ECM.Settings.InternalModPath);
             DirectoryInfo dirInfo = new DirectoryInfo(ECM.Settings.InternalModPath);
             LoadModsFromFolder(dirInfo);
 
             //Load Public Mods (User Mods)
-            Debug.Log(this + " :: Loading Public Mods From: " + ECM.Settings.PublicModPath);
+            //Debug.Log(this + " :: Loading Public Mods From: " + ECM.Settings.PublicModPath);
             dirInfo = new DirectoryInfo(ECM.Settings.PublicModPath);
             LoadModsFromFolder(dirInfo);
         }
@@ -160,7 +160,7 @@ namespace EnervaCore {
             }
 
             if(gameMod != null) {
-                Debug.Log(this + " :: Mod Info Found. Name: " + modInfo.Name);
+                //Debug.Log(this + " :: Mod Info Found. Name: " + modInfo.Name);
                 //Load Game Mod Data Files
                 LoadGameModData(gameMod);
             }
@@ -376,8 +376,8 @@ namespace EnervaCore {
             return giData;
         }
 
-        private List<ECObjectDataComponent> DeserializeComponentsFromElement(XElement rootElement) {
-            var results = new List<ECObjectDataComponent>();
+        private List<ECObjectComponentData> DeserializeComponentsFromElement(XElement rootElement) {
+            var results = new List<ECObjectComponentData>();
 
             if (rootElement == null) return results;
 
@@ -399,7 +399,7 @@ namespace EnervaCore {
                 try {
                     var serializer = GetOrCreateSerializerForType(compType);
                     using (var reader = child.CreateReader()) {
-                        var compObj = (ECObjectDataComponent)serializer.Deserialize(reader);
+                        var compObj = (ECObjectComponentData)serializer.Deserialize(reader);
                         if (compObj != null) {                            
                             results.Add(compObj);
                         }

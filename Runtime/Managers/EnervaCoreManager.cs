@@ -125,7 +125,7 @@ namespace EnervaCore {
                             _updateManagersList.Add(managerUpdate);
                         }
 
-                        Debug.Log(this + " :: Initialized Manager " + manager.GetType().ToString());                            
+                        //Debug.Log(this + " :: Initialized Manager " + manager.GetType().ToString());                            
                     }
                 }
             }

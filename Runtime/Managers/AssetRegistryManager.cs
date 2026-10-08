@@ -15,7 +15,9 @@ public delegate void AssetsLoadedDelegate();
 public class AssetRegistryManager : IManager, IManagerPostInit {
 
     //Addressable Path -> Loaded Object
-    private Dictionary<string, System.Object> _loadedAssets = new Dictionary<string, System.Object>();
+    private Dictionary<string, System.Object> _loadedAssetsByPath = new Dictionary<string, System.Object>();
+    //ID -> Path
+    private Dictionary<string, string> _assetIDToPathDict = new Dictionary<string, string>();
 
 
     public event AssetLoadedDelegate OnAssetLoaded;
@@ -35,24 +37,33 @@ public class AssetRegistryManager : IManager, IManagerPostInit {
         }
     }
 
-    public void RegisterAssetID(string path) {        
+    public void RegisterAssetID(string path, string assetID=null) {        
         if (path == null) throw new ArgumentNullException(this + $" :: Passed in Path value is null!");
 
-       if(_loadedAssets.ContainsKey(path) == false) {
+       if(_loadedAssetsByPath.ContainsKey(path) == false) {
             //Register the path with a null value. Loading get's handled under LoadAssets
-            _loadedAssets.Add(path, null);
+            _loadedAssetsByPath.Add(path, null);
+        }
+
+        if (assetID != null) {
+            if (_assetIDToPathDict.ContainsKey(assetID) == false) {
+                _assetIDToPathDict[assetID] = path;
+            }
+            else {
+                UnityEngine.Debug.LogWarning(this + $" :: AssetID '{assetID}' is already registered with path '{_assetIDToPathDict[assetID]}'. New path '{path}' will not be registered with id '{assetID}'.");
+            }
         }
     }
 
     public virtual void LoadAssets() {
-        _totalAssetsToLoad = _loadedAssets.Count;
-        foreach (var asset in _loadedAssets) {
+        _totalAssetsToLoad = _loadedAssetsByPath.Count;
+        foreach (var asset in _loadedAssetsByPath) {
             string assetID = asset.Key;
             Addressables.LoadAssetAsync<System.Object>(assetID).Completed += handle =>
             {
                 if (handle.Status == AsyncOperationStatus.Succeeded) {
                     var loadedAsset = handle.Result;
-                    _loadedAssets[assetID] = loadedAsset;   
+                    _loadedAssetsByPath[assetID] = loadedAsset;   
                     
                     OnAssetLoaded?.Invoke(assetID, loadedAsset);
 
@@ -73,12 +84,21 @@ public class AssetRegistryManager : IManager, IManagerPostInit {
         }        
     }
 
-    public T GetInstance<T>(string path) {
-        if (_loadedAssets.ContainsKey(path)) {
-            System.Object obj = _loadedAssets[path];
+    public T GetInstanceByPath<T>(string path) {
+        if (_loadedAssetsByPath.ContainsKey(path)) {
+            System.Object obj = _loadedAssetsByPath[path];
             if (obj != null) {
                 return (T)obj;
             }
+        }
+
+        return default(T);
+    }
+
+    public T GetInstanceByID<T>(string assetID) {
+        if (_assetIDToPathDict.ContainsKey(assetID)) {
+            string path = _assetIDToPathDict[assetID];
+            return GetInstanceByPath<T>(path);
         }
 
         return default(T);

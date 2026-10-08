@@ -7,7 +7,7 @@ using System.Xml.Serialization;
 /// Loads a list of <Asset>PathKey</Asset> and handles registering them with the AssetRegistry System. Data that uses this component
 /// can use GetAsset<T> to get a specified asset.
 /// </summary>
-public class CAssets : ECObjectDataComponent {
+public class CAssets : ECObjectComponentData {
     [XmlElement("Asset")]
     public List<CAssetXmlRow> Assets { get; set; }
 
@@ -39,7 +39,7 @@ public class CAssets : ECObjectDataComponent {
 
             //Notify Asset Registry. The callback above will pass the object
             //over when it's loaded
-            arm.RegisterAssetID(assetInfo.AssetPath);
+            arm.RegisterAssetID(assetInfo.AssetPath, assetInfo.ID);
         }
     }
 
@@ -64,8 +64,7 @@ public class CAssets : ECObjectDataComponent {
                     return typed as T;
                 }
 
-                UnityEngine.Debug.LogWarning(this + $" :: GetAsset Failed. Asset '{assetID}' at '{AssetPath}' is not a {typeof(T)}.");
-                //return (T)AssetsDictionary[AssetPath];
+                UnityEngine.Debug.LogWarning(this + $" :: GetAsset Failed. Asset '{assetID}' at '{AssetPath}' is not a {typeof(T)}.");                
             }
         }
         

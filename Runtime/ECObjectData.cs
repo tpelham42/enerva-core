@@ -97,11 +97,11 @@ namespace EnervaCore {
         }
 
         [XmlArray("components")]
-        [XmlArrayItem(typeof(ECObjectDataComponent))]
-        public List<ECObjectDataComponent> Components { get; set; } = new List<ECObjectDataComponent>();
+        [XmlArrayItem(typeof(ECObjectComponentData))]
+        public List<ECObjectComponentData> Components { get; set; } = new List<ECObjectComponentData>();
 
-        public T FindComponent<T>(string tag = null) where T : ECObjectDataComponent {
-            foreach (ECObjectDataComponent component in Components) {
+        public T FindComponent<T>(string tag = null) where T : ECObjectComponentData {
+            foreach (ECObjectComponentData component in Components) {
                 //Attempt to cast component as T
                 T rt = component as T;
                 if (rt != null) {
@@ -119,10 +119,10 @@ namespace EnervaCore {
             return null;
         }
 
-        public List<T> FindComponents<T>(string tag = null) where T : ECObjectDataComponent {
+        public List<T> FindComponents<T>(string tag = null) where T : ECObjectComponentData {
             List<T> matchingComponents = new List<T>();
             
-            foreach (ECObjectDataComponent component in Components) {
+            foreach (ECObjectComponentData component in Components) {
                 //Attempt to cast component as T
                 T rt = component as T;
                 if (rt != null) {
@@ -144,15 +144,24 @@ namespace EnervaCore {
         /// <typeparam name="T">Class return type </typeparam>
         /// <param name="AssetID">The id defined in CAssets->Asset xml</param>
         /// <returns></returns>
-        protected T GetAsset<T>(string AssetID) where T : class {
-            CAssets Assets = FindComponent<CAssets>();
+        protected T GetAssetByID<T>(string AssetID) where T : class {
 
-            if (Assets == null) {
-                UnityEngine.Debug.Log(this + " :: Error Getting Asset. Unable to find CAssets component!");
+            //Atempt to get asset from CAssets component if it exists on this data object
+            CAssets Assets = FindComponent<CAssets>();
+            if (Assets != null) {
+                return Assets.GetAsset<T>(AssetID);                
+            }
+
+
+            //If no CAssets component exists, attempt to get asset from AssetRegistryManager
+            AssetRegistryManager arm = ECM.Main.GetManager<AssetRegistryManager>();
+            if (arm == null) {
+                UnityEngine.Debug.LogError(this + " :: Asset Registry Manager is null!");
                 return null;
             }
 
-            return Assets.GetAsset<T>(AssetID);
+            UnityEngine.Debug.Log(this + $" :: Attempting to get asset from Asset Registry Manager: {AssetID}");
+            return arm.GetInstanceByID<T>(AssetID);
         }
 
         /// <summary>
