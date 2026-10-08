@@ -1,7 +1,12 @@
-﻿using System;
+﻿using Codice.Utils;
+using EnervaCore.Interfaces;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Unity.Scripting.LifecycleManagement.CodeGen;
+using UnityEngine;
+using UnityEngine.U2D;
 
 
 namespace EnervaCore.Managers {
@@ -18,11 +23,68 @@ namespace EnervaCore.Managers {
         public Dictionary<Type, HashSet<ECObjectData>> ItemTemplatesByType;
         public Dictionary<string, Dictionary<Type, HashSet<ECObjectData>>> ItemTemplatesByModAndType;
 
+        /// <summary>
+        /// A registry mapping ECObjectData types to their corresponding instance types. No all ECObjectData types have a corresponding instance type, so this is used to look up the correct instance type for a given data type.
+        /// </summary>
+        private Dictionary<Type, Type> _dataObjectToInstanceTypeRegistry;
+        private Dictionary<Type, Type> _dataComponentToInstanceTypeRegistry;
+
 
         public DBManager() {
             ItemTemplatesByName = new Dictionary<string, ECObjectData>();
             ItemTemplatesByType = new Dictionary<Type, HashSet<ECObjectData>>();
-            ItemTemplatesByModAndType = new Dictionary<string, Dictionary<Type, HashSet<ECObjectData>>>();  
+            ItemTemplatesByModAndType = new Dictionary<string, Dictionary<Type, HashSet<ECObjectData>>>();
+
+            InitializeDataToInstanceTypeRegistry();
+        }
+
+        void InitializeDataToInstanceTypeRegistry() {
+            _dataObjectToInstanceTypeRegistry = new Dictionary<Type, Type>();
+            _dataComponentToInstanceTypeRegistry = new Dictionary<Type, Type>();
+
+            foreach (var asm in AppDomain.CurrentDomain.GetAssemblies()) {
+                Type[] types;
+                try { types = asm.GetTypes(); }
+                catch (ReflectionTypeLoadException ex) { types = ex.Types.Where(t => t != null).ToArray(); }
+
+                foreach (var t in types) {
+                    var attr = t.GetCustomAttribute<ECInstanceType>();
+                    if (attr == null) continue;
+
+                    var instanceType = attr.InstanceType;
+                    if (instanceType == null) {
+                        Debug.LogWarning($"DBManager: ECInstanceType on {t.FullName} has null InstanceType.");
+                        continue;
+                    }
+
+                    // Validate the instance type implements IECObjectInstance when mapping data -> instance
+                    if (typeof(ECObjectData).IsAssignableFrom(t)) {
+                        if (!typeof(IECObjectInstance).IsAssignableFrom(instanceType)) {
+                            Debug.LogWarning($"DBManager: ECInstanceType mapping invalid: {t.FullName} -> {instanceType.FullName}. InstanceType does not implement IECObjectInstance.");
+                            continue;
+                        }
+
+                        _dataObjectToInstanceTypeRegistry[t] = instanceType;
+                        Debug.Log($"DBManager: Registered data->instance mapping: {t.FullName} -> {instanceType.FullName}");
+                        continue;
+                    }
+
+                    // Component data mapping
+                    if (typeof(ECObjectComponentData).IsAssignableFrom(t)) {
+                        if (!typeof(IECObjectComponentInstance).IsAssignableFrom(instanceType)) {
+                            Debug.LogWarning($"DBManager: ECInstanceType mapping invalid: {t.FullName} -> {instanceType.FullName}. InstanceType does not implement IECObjectComponentInstance.");
+                            continue;
+                        }
+
+                        _dataComponentToInstanceTypeRegistry[t] = instanceType;
+                        Debug.Log($"DBManager: Registered component-data->instance mapping: {t.FullName} -> {instanceType.FullName}");
+                        continue;
+                    }
+
+                    // If attribute placed on runtime class and you intended that, handle differently or log
+                    Debug.LogWarning($"DBManager: ECInstanceType attribute found on {t.FullName} but type is not ECObjectData or ECObjectComponentData.");
+                }
+            }
         }
 
         #region IManager Implementation
@@ -35,19 +97,67 @@ namespace EnervaCore.Managers {
         }
         #endregion
 
+        public T GetInstance<T>(ECObjectData ObjectData) where T : class, Interfaces.IECObjectInstance {
+
+            //Attempt to get matching instance type of ObjectData object
+            Type instanceType;
+            if(_dataObjectToInstanceTypeRegistry.TryGetValue(ObjectData.GetType(), out instanceType) == false) {
+                UnityEngine.Debug.LogError(this + $" :: GetInstance Error. No Instance Type Found For Data Type '{ObjectData.GetType()}'");
+                return null;
+            }
+
+            //Attempt to create instance from matching instance type
+            IECObjectInstance instance = null;
+
+            try {
+                instance = (IECObjectInstance)Activator.CreateInstance(instanceType);
+                instance.Template = ObjectData;
+
+                //Iterate over components in data class and create instance versions if applicable. Not all components have instances
+                foreach(ECObjectComponentData componentData in ObjectData.Components) {
+                    Type componentInstanceType;
+                    if(_dataComponentToInstanceTypeRegistry.TryGetValue(componentData.GetType(), out componentInstanceType)) {
+                        //Create component instance
+                        IECObjectComponentInstance componentInstance = (IECObjectComponentInstance)Activator.CreateInstance(componentInstanceType);
+
+                        //Set parent to object instance and add to object instance's component list
+                        componentInstance.Parent = instance;
+                        instance.Components.Add(componentInstance);
+
+                        //Call OnInit for component instance
+                        componentInstance.ComponentData = componentData;
+                        componentInstance.OnInit();
+                    }
+                }
+
+                instance.OnInit();
+            }
+            catch (Exception ex) {
+                UnityEngine.Debug.LogError(this + $" :: GetInstance Error. Failed to create instance for type {instanceType} - {ex}");
+                return null;
+            }
+                        
+            return instance as T;
+        }
+
         /// <summary>
         /// Returns an instance of the specified type T which must be an ECObject type, initialized with the template corresponding to the provided templateName.
         /// </summary>
         /// <typeparam name="T">Type of the instance to create</typeparam>
         /// <param name="templateName">ID of EObjectData template</param>
         /// <returns></returns>
-        public T GetInstance<T>(string templateName) where T : ECObjectInstance {
+        public T GetInstance<T>(string templateName) where T : class, EnervaCore.Interfaces.IECObjectInstance {
             if (!ItemTemplatesByName.ContainsKey(templateName)) {
                 UnityEngine.Debug.LogWarning(this + " :: GetInstance :: Template with name " + templateName + " does not exist in the database.");
                 return null;
             }
 
-            var template = ItemTemplatesByName[templateName];
+            ECObjectData template = ItemTemplatesByName[templateName];
+            if (template == null)
+                return null;
+
+            return GetInstance<T>(template);
+                
 
             string spawnTypeName = template.SpawnType;
             Type spawnType = null;
@@ -78,15 +188,15 @@ namespace EnervaCore.Managers {
                 UnityEngine.Debug.LogError(this + $" :: GetInstance Error. Spawn Type for {template.ID} not defined!");
             }
 
-            ECObjectInstance instance = null;
+            EnervaCore.Interfaces.IECObjectInstance instance = null;
 
             try {
                 if (spawnType != null && typeof(T).IsAssignableFrom(spawnType)) {
-                    instance = (T)Activator.CreateInstance(spawnType);
+                    instance = (EnervaCore.Interfaces.IECObjectInstance)Activator.CreateInstance(spawnType);
                 }
                 else {
-                    // fallback to a plain ECObject if spawnType is missing/invalid
-                    instance = default(T);
+                    UnityEngine.Debug.LogError(this + $" :: GetInstance Error. Unable to create instance for type {spawnTypeName}.");
+                    return null;
                 }
 
                 // assign template

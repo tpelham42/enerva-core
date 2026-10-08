@@ -1,10 +1,12 @@
 using EnervaCore;
+using EnervaCore.Objects;
 using System;
 using System.Reflection.Metadata.Ecma335;
 using System.Xml.Serialization;
 using UnityEngine;
 
 namespace EnervaCore {
+    [ECInstanceType(typeof(InputKey))]
     public class InputKeyData : ECObjectData {
         [XmlElement("Key")]
         public string KeyName {
